@@ -1,5 +1,12 @@
 
+var localPrefs = {
+	lastSubscriberCursor: undefined
+	};
 
+
+function saveLocalPrefs () {
+	localStorage.localPrefs = jsonStringify (localPrefs);
+	}
 function httpRequest (url, timeout, headers, callback) {
 	timeout = (timeout === undefined) ? 30000 : timeout;
 	var jxhr = $.ajax ({ 
@@ -70,7 +77,6 @@ function getUpdateableTime (when, flTextAtEnd=".", flLongString=true, link) { //
 	theWhen.on ("update", setWhen);
 	return (theWhen);
 	}
-
 function viewBlueskyFeed (feedUrl, theFeed, whereToAppend) {
 	const divFeed = $("<div class=\"divBlueskyFeed\"></div>");
 	
@@ -134,28 +140,184 @@ function viewBlueskyFeed (feedUrl, theFeed, whereToAppend) {
 	
 	whereToAppend.append (divFeed);
 	}
+function viewFeed (username) {
+	const feedUrl = "https://rss.firesky.tv?filter=from%3A" + username;
+	readFeed (feedUrl, function (err, theFeed) {
+		if (err) {
+			alertDialog (err.message);
+			}
+		else {
+			viewBlueskyFeed (feedUrl, theFeed, $(".divPageBody"));
+			}
+		});
+	}
+function readOutline (url, callback) {
+	readHttpFileThruProxy (url, undefined, function (opmltext) {
+		if (opmltext === undefined) {
+			callback ({message: "There was an error reading the file."});
+			}
+		else {
+			callback (undefined, opml.parse (opmltext));
+			}
+		});
+	}
+
+
+function realViewFeed (feedUrl, whereToAppend) { //this is the real one! 
+	whereToAppend.empty ();
+	readFeed (feedUrl, function (err, theFeed) {
+		if (err) {
+			alertDialog (err.message);
+			}
+		else {
+			const divFeedItems = $("<div class=\"divFeedItems\"></div>");
+			theFeed.items.forEach (function (item) {
+				const divFeedItem = $("<div class=\"divFeedItem\"></div>");
+				function getFeedItemWhen () {
+					const divFeedItemWhen = $("<div class=\"divFeedItemWhen\"></div>");
+					divFeedItemWhen.append (getUpdateableTime (item.pubDate));
+					return (divFeedItemWhen);
+					}
+				function getFeedItemText () {
+					const divFeedItemText = $("<td class=\"divFeedItemText\"></td>");
+					divFeedItemText.text (item.markdowntext);
+					return (divFeedItemText);
+					
+					}
+				divFeedItem.append (getFeedItemText ());
+				divFeedItem.append (getFeedItemWhen ());
+				divFeedItems.append (divFeedItem);
+				});
+			whereToAppend.append (divFeedItems);
+			}
+		});
+	}
+
+
+function viewSubscriptionList (username, whereToAppend) {
+	const urlOutline = "https://firesky.tv/lists/@" + username + "/follows.opml";
+	readOutline (urlOutline, function (err, theOutline) {
+		if (err) {
+			alertDialog (err.message);
+			}
+		else {
+			function sortSubscriptions (theOutline) {
+				const options = {
+					flReverseSort: false
+					};
+				theOutline.opml.body.subs.sort (function (a, b) {
+					var alower = a.text.toLowerCase (), val;
+					var blower = b.text.toLowerCase ();
+					if (options.flReverseSort) { //7/11/22 by DW
+						let tmp = alower;
+						alower = blower;
+						blower = tmp;
+						}
+					if (alower.length == 0) {
+						return (1);
+						}
+					if (blower.length == 0) {
+						return (-1);
+						}
+					if (alower == blower) {
+						val = 0;
+						}
+					else {
+						if (blower > alower) {
+							val = -1;
+							}
+						else {
+							val = 1;
+							}
+						}
+					return (val);
+					});
+				}
+			function getItemText (item) {
+				const junk = "Bluesky posts: from:";
+				var theText = stringDelete (item.text, 1, junk.length);
+				return (theText);
+				}
+			function getTopOfPageInfo () {
+				const divTopOfPageInfo = $("<div class=\"divTopOfPageInfo\"></div>");
+				const theHead = theOutline.opml.head;
+				const urlOutlineForDisplay = urlOutline;
+				const divPubdate = $("<div class=\"divBlueskyFeedPubdate\">" + formatDateTime (theHead.dateModified) + ", " + urlOutlineForDisplay + "</div>");
+				const divTitle = $("<div class=\"divBlueskyFeedTitle\">" + theHead.title + "</div>");
+				const divDescription = $("<div class=\"divBlueskyFeedDescription\">" + theHead.description + "</div>");
+				divTopOfPageInfo.append (divPubdate);
+				divTopOfPageInfo.append (divTitle);
+				divTopOfPageInfo.append (divDescription);
+				return (divTopOfPageInfo);
+				}
+			const divFeedListContainer = $("<div class=\"divFeedListContainer\"></div>");
+			
+			divFeedListContainer.append (getTopOfPageInfo ());
+			
+			const divListViewer = $("<div class=\"divListViewer\"></div>");
+			const ulFeedList = $("<ul class=\"ulFeedList\"></ul>");
+			divListViewer.append (ulFeedList);
+			divFeedListContainer.append (divListViewer);
+			
+			const divFeedViewer = $("<div class=\"divFeedViewer\"></div>");
+			divFeedListContainer.append (divFeedViewer);
+			
+			sortSubscriptions (theOutline);
+			
+			const topLevelOutline = theOutline.opml.body.subs;
+			const ixcursor = (localPrefs.lastSubscriberCursor !== undefined) ? localPrefs.lastSubscriberCursor : 0;
+			topLevelOutline.forEach (function (item, ix) {
+				const liFeedListItem = $("<li class=\"liFeedListItem\"></li>");
+				liFeedListItem.html (getItemText (item));
+				liFeedListItem.click (function () {
+					console.log ("click: item == " + jsonStringify (item));
+					$(".listCursorOn").removeClass ("listCursorOn");
+					liFeedListItem.addClass ("listCursorOn");
+					realViewFeed (item.xmlUrl, divFeedViewer);
+					localPrefs.lastSubscriberCursor = ix;
+					saveLocalPrefs ();
+					});
+				
+				if (ix == ixcursor) {
+					liFeedListItem.addClass ("listCursorOn");
+					}
+				
+				ulFeedList.append (liFeedListItem);
+				});
+			
+			realViewFeed (topLevelOutline [ixcursor].xmlUrl, divFeedViewer);
+			
+			whereToAppend.append (divFeedListContainer);
+			}
+		});
+	}
 
 function everyMinute () {
 	$(".spUpdateableTime").trigger ("update");
 	}
 function startup () {
 	console.log ("startup");
-	
-	
+	if (localStorage.localPrefs !== undefined) {
+		try {
+			localPrefs = JSON.parse (localStorage.localPrefs);
+			}
+		catch (err) {
+			}
+		}
 	const allparams = getAllUrlParams ();
-	const username = (allparams.username === undefined) ? "nyt.bsky.social" : allparams.username;
-	const feedUrl = "https://rss.firesky.tv?filter=from%3A" + username;
 	
-	console.log ("startup: feedUrl == " + feedUrl);
+	if (allparams.subs !== undefined) {
+		viewSubscriptionList (allparams.subs, $(".divPageBody"));
+		}
+	else {
+		if (allparams.username === undefined) {
+			viewFeed ("davew");
+			}
+		else { //show one feed
+			viewFeed (allparams.username);
+			}
+		}
 	
-	readFeed (feedUrl, function (err, theFeed) {
-		if (err) {
-			console.log (err.message);
-			}
-		else {
-			viewBlueskyFeed (feedUrl, theFeed, $(".divPageBody"));
-			}
-		});
 	runEveryMinute (everyMinute);
 	hitCounter ();
 	}
