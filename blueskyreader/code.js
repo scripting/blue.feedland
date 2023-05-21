@@ -266,9 +266,12 @@ function viewSubscriptionList (username, whereToAppend) {
 		else {
 			function removeJunkFromOutline () { //stuff i don't want in the outline
 				theOutline.opml.body.subs.forEach (function (item) {
-					const junk = "Bluesky posts: from:";
+					const junk = "on Bluesky";
 					if (stringContains (item.text, junk)) {
-						item.text = stringDelete (item.text, 1, junk.length);
+						item.text = replaceAll (item.text, junk, "");
+						}
+					if (beginsWith (item.text, "@")) {
+						item.text = stringDelete (item.text, 1, 1);
 						}
 					});
 				}
