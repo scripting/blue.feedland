@@ -86,7 +86,9 @@ body {
 	background-color: white;
 	}
 .divFeedItem {
-	margin-bottom: 10px;
+	padding-top: 10px;
+	padding-left: 10px;
+	padding-bottom: 10px;
 	border-bottom: 1px solid silver;
 	}
 .listCursorOn {
@@ -104,4 +106,41 @@ body {
 	font-style: italic;
 	}
 
+.divFeedItemTopline {
+	margin-bottom: 10px;
+	font-size: 12px;
+	}
+.divFeedItemText {
+	font-size: 16px;
+	}
+.divFeedItemText p {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	}
+.divFeedItemBottomline {
+	margin-top: 10px;
+	font-size: 14px;
+	}
+.spItemName {
+	font-weight: bold;
+	margin-right: 5px;
+	}
+.spItemUsername {
+	margin-right: 5px;
+	}
+.spItemWhen {
+	margin-right: 5px;
+	}
+.spFeedItemReplies {
+	margin-right: 65px;
+	}
+.spFeedItemRTs {
+	margin-right: 65px;
+	}
+.spFeedItemFaves {
+	margin-right: 65px;
+	}
+.spFeedItemMenu {
+	margin-right: 65px;
+	}
 

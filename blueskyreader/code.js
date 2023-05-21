@@ -1,8 +1,6 @@
-
 var localPrefs = {
 	lastSubscriberCursor: undefined
 	};
-
 
 function saveLocalPrefs () {
 	localStorage.localPrefs = jsonStringify (localPrefs);
@@ -71,13 +69,15 @@ function readFeed (feedUrl, callback) {
 			callback (err);
 			}
 		else {
+			var jstruct;
 			try {
-				var jstruct = JSON.parse (jsontext);
-				callback (undefined, jstruct); 
+				jstruct = JSON.parse (jsontext);
 				}
 			catch (err) {
 				callback (err);
+				return;
 				}
+			callback (undefined, jstruct); 
 			}
 		});
 	}
@@ -166,8 +166,7 @@ function viewFeedForEarlyDemo (username) {
 		});
 	}
 
-
-function realViewFeed (feedUrl, whereToAppend) { //this is the real one! 
+function viewFeed (feedUrl, whereToAppend) { //this is the real one! 
 	whereToAppend.empty ();
 	readFeed (feedUrl, function (err, theFeed) {
 		if (err) {
@@ -182,6 +181,48 @@ function realViewFeed (feedUrl, whereToAppend) { //this is the real one!
 					divFeedItemWhen.append (getUpdateableTime (item.pubDate));
 					return (divFeedItemWhen);
 					}
+				function getFeedItemTopline () {
+					const divFeedItemTopline = $("<div class=\"divFeedItemTopline\"></div>");
+					
+					divFeedItemTopline.append ("<span class=\"spItemName\">" + "Morty Gunty" + "</span>");
+					divFeedItemTopline.append ("<span class=\"spItemUsername\">" + item.author + "</span>");
+					
+					const spWhen = $("<span class=\"spItemWhen\"></span>");
+					spWhen.append (getUpdateableTime (item.pubDate));
+					divFeedItemTopline.append (spWhen);
+					
+					return (divFeedItemTopline);
+					}
+				
+				
+				
+				function getFeedItemBottomline () {
+					const divFeedItemBottomline = $("<div class=\"divFeedItemBottomline\"></div>");
+					function getReplies () {
+						const divFeedItemReplies = $("<span class=\"spFeedItemReplies\"></span>");
+						divFeedItemReplies.html ("x 0");
+						return (divFeedItemReplies);
+						}
+					function getRTs () {
+						const divFeedItemRTs = $("<span class=\"spFeedItemRTs\"></span>");
+						divFeedItemRTs.html ("x 0");
+						return (divFeedItemRTs);
+						}
+					function getFaves () {
+						const divFeedItemFaves = $("<span class=\"spFeedItemFaves\"></span>");
+						divFeedItemFaves.html ("x 0");
+						return (divFeedItemFaves);
+						}
+					function getMenu () {
+						const divFeedItemMenu = $("<span class=\"spFeedItemMenu\">...</span>");
+						return (divFeedItemMenu);
+						}
+					divFeedItemBottomline.append (getReplies ());
+					divFeedItemBottomline.append (getRTs ());
+					divFeedItemBottomline.append (getFaves ());
+					divFeedItemBottomline.append (getMenu ());
+					return (divFeedItemBottomline);
+					}
 				function getFeedItemText () {
 					function decodeText (theText) {
 						const replaceTable1 = {
@@ -195,14 +236,20 @@ function realViewFeed (feedUrl, whereToAppend) { //this is the real one!
 						return (theText);
 						}
 					const divFeedItemText = $("<td class=\"divFeedItemText\"></td>");
-					var theText = item.markdowntext;
+					var theText = (item.markdowntext === undefined) ? item.description : item.markdowntext;
+					
+					if (theText === undefined) {
+						console.log ("hello");
+						}
+					
 					theText = decodeText (theText);
 					theText = markdownProcess (theText);
 					divFeedItemText.html (theText);
 					return (divFeedItemText);
 					}
+				divFeedItem.append (getFeedItemTopline ());
 				divFeedItem.append (getFeedItemText ());
-				divFeedItem.append (getFeedItemWhen ());
+				divFeedItem.append (getFeedItemBottomline ());
 				divFeedItems.append (divFeedItem);
 				});
 			whereToAppend.append (divFeedItems);
@@ -267,6 +314,11 @@ function viewSubscriptionList (username, whereToAppend) {
 				}
 			function getItemText (item) {
 				const junk = "Bluesky posts: from:";
+				
+				
+				
+				
+				
 				var theText = item.text;
 				if (stringContains (item.text, junk)) {
 					theText = stringDelete (theText, 1, junk.length);
@@ -305,12 +357,15 @@ function viewSubscriptionList (username, whereToAppend) {
 			const ixcursor = (localPrefs.lastSubscriberCursor !== undefined) ? localPrefs.lastSubscriberCursor : 0;
 			topLevelOutline.forEach (function (item, ix) {
 				const liFeedListItem = $("<li class=\"liFeedListItem\"></li>");
+				
 				liFeedListItem.html (getItemText (item));
+				
+				
 				liFeedListItem.click (function () {
 					console.log ("click: item == " + jsonStringify (item));
 					$(".listCursorOn").removeClass ("listCursorOn");
 					liFeedListItem.addClass ("listCursorOn");
-					realViewFeed (item.xmlUrl, divFeedViewer);
+					viewFeed (item.xmlUrl, divFeedViewer);
 					localPrefs.lastSubscriberCursor = ix;
 					saveLocalPrefs ();
 					});
@@ -322,7 +377,7 @@ function viewSubscriptionList (username, whereToAppend) {
 				ulFeedList.append (liFeedListItem);
 				});
 			
-			realViewFeed (topLevelOutline [ixcursor].xmlUrl, divFeedViewer);
+			viewFeed (topLevelOutline [ixcursor].xmlUrl, divFeedViewer);
 			
 			whereToAppend.append (divFeedListContainer);
 			}
