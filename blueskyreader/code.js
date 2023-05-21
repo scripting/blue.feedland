@@ -7,6 +7,37 @@ var localPrefs = {
 function saveLocalPrefs () {
 	localStorage.localPrefs = jsonStringify (localPrefs);
 	}
+function formatDateTime (d) {
+	d = new Date (d);
+	return (d.toLocaleDateString () + " at " + d.toLocaleTimeString ());
+	}
+function getFeedlandTimeString (when, flLongStrings=false) {
+	const options = {
+		flBriefYearDates: true,
+		nowString: "now"
+		};
+	var s = getFacebookTimeString (when, flLongStrings, options);
+	return (s);
+	}
+function getUpdateableTime (when, flTextAtEnd=".", flLongString=true, link) { //8/28/22 by DW
+	var theWhen = $("<span class=\"spUpdateableTime\"></span>");
+	function setWhen () {
+		var whenstring = getFeedlandTimeString (when, flLongString) + flTextAtEnd;
+		if (link !== undefined) { //9/1/22 by DW
+			whenstring = "<a href=\"" + link + "\" target=\"_blank\">" + whenstring + "</a>";
+			}
+		if (theWhen.html () != whenstring) { //avoid flashing in the debugger, it's annoying
+			theWhen.html (whenstring);
+			}
+		}
+	setWhen ();
+	theWhen.on ("update", setWhen);
+	return (theWhen);
+	}
+function markdownProcess (s) {
+	var md = new Markdown.Converter ();
+	return (md.makeHtml (s));
+	}
 function httpRequest (url, timeout, headers, callback) {
 	timeout = (timeout === undefined) ? 30000 : timeout;
 	var jxhr = $.ajax ({ 
@@ -50,107 +81,6 @@ function readFeed (feedUrl, callback) {
 			}
 		});
 	}
-function formatDateTime (d) {
-	d = new Date (d);
-	return (d.toLocaleDateString () + " at " + d.toLocaleTimeString ());
-	}
-function getFeedlandTimeString (when, flLongStrings=false) {
-	const options = {
-		flBriefYearDates: true,
-		nowString: "now"
-		};
-	var s = getFacebookTimeString (when, flLongStrings, options);
-	return (s);
-	}
-function getUpdateableTime (when, flTextAtEnd=".", flLongString=true, link) { //8/28/22 by DW
-	var theWhen = $("<span class=\"spUpdateableTime\"></span>");
-	function setWhen () {
-		var whenstring = getFeedlandTimeString (when, flLongString) + flTextAtEnd;
-		if (link !== undefined) { //9/1/22 by DW
-			whenstring = "<a href=\"" + link + "\" target=\"_blank\">" + whenstring + "</a>";
-			}
-		if (theWhen.html () != whenstring) { //avoid flashing in the debugger, it's annoying
-			theWhen.html (whenstring);
-			}
-		}
-	setWhen ();
-	theWhen.on ("update", setWhen);
-	return (theWhen);
-	}
-function viewBlueskyFeed (feedUrl, theFeed, whereToAppend) {
-	const divFeed = $("<div class=\"divBlueskyFeed\"></div>");
-	
-	const divFeedUrl = $("<div class=\"divBlueskyFeedUrl\"></div>");
-	const divFeedUrlIcon = $("<a href=\"" + feedUrl + "\"><div class=\"divXmlIcon\">XML</div></a>");
-	divFeedUrl.append (divFeedUrlIcon);
-	divFeed.append (divFeedUrl);
-	
-	const divPubdate = $("<div class=\"divBlueskyFeedPubdate\">" + formatDateTime (theFeed.pubDate) + "</div>");
-	const divTitle = $("<div class=\"divBlueskyFeedTitle\">" + theFeed.title + "</div>");
-	const divDescription = $("<div class=\"divBlueskyFeedDescription\">" + theFeed.description + "</div>");
-	divFeed.append (divPubdate);
-	divFeed.append (divTitle);
-	divFeed.append (divDescription);
-	
-	var ct = 0;
-	const divItems = $("<div class=\"divBlueskyFeedItems\"></div>");
-	theFeed.items.forEach (function (item) {
-		if (++ct <= 5) {
-			const divItem  = $("<div class=\"divBlueskyFeedItem\"></div>");
-			
-			function processDescription (theDescription) {
-				const replaceTable1 = {
-					"&#10;": "\n"
-					};
-				theDescription = multipleReplaceAll (theDescription, replaceTable1, false, "", "");
-				
-				const replaceTable2 = {
-					"\n": "<br>"
-					};
-				theDescription = multipleReplaceAll (theDescription, replaceTable2, false, "", "");
-				
-				theDescription = decodeXml (theDescription);
-				
-				return (theDescription);
-				}
-			function getItemImage (imageUrl) {
-				const theImage = $("<img src=\"" + imageUrl + "\">");
-				return (theImage);
-				}
-			
-			const divItemPubdate = $("<div class=\"divBlueskyFeedItemPubdate\"></div>");
-			divItemPubdate.append (getUpdateableTime (item.pubDate));
-			divItem.append (divItemPubdate);
-			
-			const divItemText = $("<div class=\"divBlueskyFeedItemText\">" + processDescription (item.description) + "</div>");
-			divItem.append (divItemText);
-			
-			if (item.enclosure !== undefined) {
-				if (beginsWith (item.enclosure.type, "image/")) {
-					const divImage = $("<div class=\"divBlueskyFeedItemImage\"></div>");
-					divImage.append (getItemImage (item.enclosure.url));
-					divItem.append (divImage);
-					}
-				}
-			
-			divItems.append (divItem);
-			}
-		});
-	divFeed.append (divItems);
-	
-	whereToAppend.append (divFeed);
-	}
-function viewFeed (username) {
-	const feedUrl = "https://rss.firesky.tv?filter=from%3A" + username;
-	readFeed (feedUrl, function (err, theFeed) {
-		if (err) {
-			alertDialog (err.message);
-			}
-		else {
-			viewBlueskyFeed (feedUrl, theFeed, $(".divPageBody"));
-			}
-		});
-	}
 function readOutline (url, callback) {
 	readHttpFileThruProxy (url, undefined, function (opmltext) {
 		if (opmltext === undefined) {
@@ -158,6 +88,80 @@ function readOutline (url, callback) {
 			}
 		else {
 			callback (undefined, opml.parse (opmltext));
+			}
+		});
+	}
+function viewFeedForEarlyDemo (username) {
+	const feedUrl = "https://rss.firesky.tv?filter=from%3A" + username;
+	function processDescription (theDescription) {
+		const replaceTable1 = {
+			"&#10;": "\n"
+			};
+		theDescription = multipleReplaceAll (theDescription, replaceTable1, false, "", "");
+		
+		const replaceTable2 = {
+			"\n": "<br>"
+			};
+		theDescription = multipleReplaceAll (theDescription, replaceTable2, false, "", "");
+		
+		theDescription = decodeXml (theDescription);
+		
+		return (theDescription);
+		}
+	function viewBlueskyFeed (feedUrl, theFeed, whereToAppend) {
+		const divFeed = $("<div class=\"divBlueskyFeed\"></div>");
+		
+		const divFeedUrl = $("<div class=\"divBlueskyFeedUrl\"></div>");
+		const divFeedUrlIcon = $("<a href=\"" + feedUrl + "\"><div class=\"divXmlIcon\">XML</div></a>");
+		divFeedUrl.append (divFeedUrlIcon);
+		divFeed.append (divFeedUrl);
+		
+		const divPubdate = $("<div class=\"divBlueskyFeedPubdate\">" + formatDateTime (theFeed.pubDate) + "</div>");
+		const divTitle = $("<div class=\"divBlueskyFeedTitle\">" + theFeed.title + "</div>");
+		const divDescription = $("<div class=\"divBlueskyFeedDescription\">" + theFeed.description + "</div>");
+		divFeed.append (divPubdate);
+		divFeed.append (divTitle);
+		divFeed.append (divDescription);
+		
+		var ct = 0;
+		const divItems = $("<div class=\"divBlueskyFeedItems\"></div>");
+		theFeed.items.forEach (function (item) {
+			if (++ct <= 5) {
+				const divItem  = $("<div class=\"divBlueskyFeedItem\"></div>");
+				
+				function getItemImage (imageUrl) {
+					const theImage = $("<img src=\"" + imageUrl + "\">");
+					return (theImage);
+					}
+				
+				const divItemPubdate = $("<div class=\"divBlueskyFeedItemPubdate\"></div>");
+				divItemPubdate.append (getUpdateableTime (item.pubDate));
+				divItem.append (divItemPubdate);
+				
+				const divItemText = $("<div class=\"divBlueskyFeedItemText\">" + processDescription (item.description) + "</div>");
+				divItem.append (divItemText);
+				
+				if (item.enclosure !== undefined) {
+					if (beginsWith (item.enclosure.type, "image/")) {
+						const divImage = $("<div class=\"divBlueskyFeedItemImage\"></div>");
+						divImage.append (getItemImage (item.enclosure.url));
+						divItem.append (divImage);
+						}
+					}
+				
+				divItems.append (divItem);
+				}
+			});
+		divFeed.append (divItems);
+		
+		whereToAppend.append (divFeed);
+		}
+	readFeed (feedUrl, function (err, theFeed) {
+		if (err) {
+			alertDialog (err.message);
+			}
+		else {
+			viewBlueskyFeed (feedUrl, theFeed, $(".divPageBody"));
 			}
 		});
 	}
@@ -179,10 +183,23 @@ function realViewFeed (feedUrl, whereToAppend) { //this is the real one!
 					return (divFeedItemWhen);
 					}
 				function getFeedItemText () {
+					function decodeText (theText) {
+						const replaceTable1 = {
+							"&#10;": "\n"
+							};
+						theText = multipleReplaceAll (theText, replaceTable1, false, "", "");
+						
+						
+						theText = decodeXml (theText);
+						
+						return (theText);
+						}
 					const divFeedItemText = $("<td class=\"divFeedItemText\"></td>");
-					divFeedItemText.text (item.markdowntext);
+					var theText = item.markdowntext;
+					theText = decodeText (theText);
+					theText = markdownProcess (theText);
+					divFeedItemText.html (theText);
 					return (divFeedItemText);
-					
 					}
 				divFeedItem.append (getFeedItemText ());
 				divFeedItem.append (getFeedItemWhen ());
@@ -193,7 +210,6 @@ function realViewFeed (feedUrl, whereToAppend) { //this is the real one!
 		});
 	}
 
-
 function viewSubscriptionList (username, whereToAppend) {
 	const urlOutline = "https://firesky.tv/lists/@" + username + "/follows.opml";
 	readOutline (urlOutline, function (err, theOutline) {
@@ -201,7 +217,23 @@ function viewSubscriptionList (username, whereToAppend) {
 			alertDialog (err.message);
 			}
 		else {
-			function sortSubscriptions (theOutline) {
+			function removeJunkFromOutline () { //stuff i don't want in the outline
+				theOutline.opml.body.subs.forEach (function (item) {
+					const junk = "Bluesky posts: from:";
+					if (stringContains (item.text, junk)) {
+						item.text = stringDelete (item.text, 1, junk.length);
+						}
+					});
+				}
+			function addAccountToList (username) {
+				theOutline.opml.body.subs.unshift ({
+					type: "rss",
+					text: username,
+					htmlUrl: "https://firesky.tv?filter=from%3A" + username,
+					xmlUrl: "https://rss.firesky.tv?filter=from%3A" + username
+					});
+				}
+			function sortSubscriptions () {
 				const options = {
 					flReverseSort: false
 					};
@@ -235,7 +267,10 @@ function viewSubscriptionList (username, whereToAppend) {
 				}
 			function getItemText (item) {
 				const junk = "Bluesky posts: from:";
-				var theText = stringDelete (item.text, 1, junk.length);
+				var theText = item.text;
+				if (stringContains (item.text, junk)) {
+					theText = stringDelete (theText, 1, junk.length);
+					}
 				return (theText);
 				}
 			function getTopOfPageInfo () {
@@ -262,7 +297,9 @@ function viewSubscriptionList (username, whereToAppend) {
 			const divFeedViewer = $("<div class=\"divFeedViewer\"></div>");
 			divFeedListContainer.append (divFeedViewer);
 			
-			sortSubscriptions (theOutline);
+			removeJunkFromOutline ();
+			addAccountToList (username);
+			sortSubscriptions ();
 			
 			const topLevelOutline = theOutline.opml.body.subs;
 			const ixcursor = (localPrefs.lastSubscriberCursor !== undefined) ? localPrefs.lastSubscriberCursor : 0;
@@ -304,18 +341,14 @@ function startup () {
 		catch (err) {
 			}
 		}
-	const allparams = getAllUrlParams ();
 	
+	const allparams = getAllUrlParams ();
 	if (allparams.subs !== undefined) {
 		viewSubscriptionList (allparams.subs, $(".divPageBody"));
 		}
 	else {
-		if (allparams.username === undefined) {
-			viewFeed ("davew");
-			}
-		else { //show one feed
-			viewFeed (allparams.username);
-			}
+		const username = (allparams.username === undefined) ? "davew" : allparams.username;
+		viewFeedForEarlyDemo (username);
 		}
 	
 	runEveryMinute (everyMinute);
