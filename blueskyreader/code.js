@@ -36,6 +36,17 @@ function markdownProcess (s) {
 	var md = new Markdown.Converter ();
 	return (md.makeHtml (s));
 	}
+function addToolTip (theObject, tipText, placement="right") { //8/24/22 by DW
+	$(theObject).attr ("data-container", "body"); //10/23/22 by DW
+	$(theObject).attr ("data-toggle", "tooltip");
+	$(theObject).attr ("data-placement", placement);
+	$(theObject).attr ("title", tipText);
+	$(theObject).click (function () { //11/1/22 by DW
+		$(theObject).tooltip ("hide");
+		});
+	theObject.tooltip (); //5/22/23 by DW
+	return (theObject);
+	}
 function httpRequest (url, timeout, headers, callback) {
 	timeout = (timeout === undefined) ? 30000 : timeout;
 	var jxhr = $.ajax ({ 
@@ -167,6 +178,7 @@ function viewFeedForEarlyDemo (username) {
 	}
 
 function viewFeed (feedUrl, whereToAppend) { //this is the real one! 
+	console.log ("viewFeed");
 	whereToAppend.empty ();
 	readFeed (feedUrl, function (err, theFeed) {
 		if (err) {
@@ -174,90 +186,98 @@ function viewFeed (feedUrl, whereToAppend) { //this is the real one!
 			}
 		else {
 			const divFeedItems = $("<div class=\"divFeedItems\"></div>");
-			theFeed.items.forEach (function (item) {
-				const divFeedItem = $("<div class=\"divFeedItem\"></div>");
-				function getFeedItemWhen () {
-					const divFeedItemWhen = $("<div class=\"divFeedItemWhen\"></div>");
-					divFeedItemWhen.append (getUpdateableTime (item.pubDate));
-					return (divFeedItemWhen);
-					}
-				function getFeedItemTopline () {
-					const divFeedItemTopline = $("<div class=\"divFeedItemTopline\"></div>");
-					
-					divFeedItemTopline.append ("<span class=\"spItemName\">" + "Morty Gunty" + "</span>");
-					divFeedItemTopline.append ("<span class=\"spItemUsername\">" + item.author + "</span>");
-					
-					const spWhen = $("<span class=\"spItemWhen\"></span>");
-					spWhen.append (getUpdateableTime (item.pubDate));
-					divFeedItemTopline.append (spWhen);
-					
-					return (divFeedItemTopline);
-					}
-				
-				
-				
-				function getFeedItemBottomline () {
-					const divFeedItemBottomline = $("<div class=\"divFeedItemBottomline\"></div>");
-					function getReplies () {
-						const divFeedItemReplies = $("<span class=\"spFeedItemReplies\"></span>");
-						divFeedItemReplies.html ("x 0");
-						return (divFeedItemReplies);
+			
+			if (theFeed.items.length == 0) {
+				divFeedItems.html ("<div class=\"divFeedHasNoItems\">This <a href=\"" + feedUrl + "\" target=\"_blank\">feed</a> has no items.</div>");
+				}
+			else {
+				theFeed.items.forEach (function (item) {
+					const divFeedItem = $("<div class=\"divFeedItem\"></div>");
+					function getFeedItemWhen () {
+						const divFeedItemWhen = $("<div class=\"divFeedItemWhen\"></div>");
+						divFeedItemWhen.append (getUpdateableTime (item.pubDate));
+						return (divFeedItemWhen);
 						}
-					function getRTs () {
-						const divFeedItemRTs = $("<span class=\"spFeedItemRTs\"></span>");
-						divFeedItemRTs.html ("x 0");
-						return (divFeedItemRTs);
-						}
-					function getFaves () {
-						const divFeedItemFaves = $("<span class=\"spFeedItemFaves\"></span>");
-						divFeedItemFaves.html ("x 0");
-						return (divFeedItemFaves);
-						}
-					function getMenu () {
-						const divFeedItemMenu = $("<span class=\"spFeedItemMenu\">...</span>");
-						return (divFeedItemMenu);
-						}
-					divFeedItemBottomline.append (getReplies ());
-					divFeedItemBottomline.append (getRTs ());
-					divFeedItemBottomline.append (getFaves ());
-					divFeedItemBottomline.append (getMenu ());
-					return (divFeedItemBottomline);
-					}
-				function getFeedItemText () {
-					function decodeText (theText) {
-						const replaceTable1 = {
-							"&#10;": "\n"
-							};
-						theText = multipleReplaceAll (theText, replaceTable1, false, "", "");
+					function getFeedItemTopline () {
+						const divFeedItemTopline = $("<div class=\"divFeedItemTopline\"></div>");
 						
+						const spFeedTitle = $("<span class=\"spItemName\">" + theFeed.title + "</span>");
+						divFeedItemTopline.append (spFeedTitle);
+						addToolTip (spFeedTitle, theFeed.description);
 						
-						theText = decodeXml (theText);
+						divFeedItemTopline.append ("<span class=\"spItemUsername\">" + item.author + "</span>");
+						divFeedItemTopline.append ("<span class=\"spItemFeed\">(<a href=\"" + feedUrl + "\" target=\"_blank\">feed</a>)</span>");
+						const spWhen = $("<span class=\"spItemWhen\"></span>");
+						spWhen.append (getUpdateableTime (item.pubDate));
+						divFeedItemTopline.append (spWhen);
 						
-						return (theText);
+						return (divFeedItemTopline);
 						}
-					const divFeedItemText = $("<td class=\"divFeedItemText\"></td>");
-					var theText = (item.markdowntext === undefined) ? item.description : item.markdowntext;
-					
-					if (theText === undefined) {
-						console.log ("hello");
+					function getFeedItemBottomline () {
+						const divFeedItemBottomline = $("<div class=\"divFeedItemBottomline\"></div>");
+						function getReplies () {
+							const divFeedItemReplies = $("<span class=\"spFeedItemReplies\"></span>");
+							divFeedItemReplies.html ("<i class=\"fa fa-comment\"></i> 0");
+							return (divFeedItemReplies);
+							}
+						function getRTs () {
+							const divFeedItemRTs = $("<span class=\"spFeedItemRTs\"></span>");
+							divFeedItemRTs.html ("<i class=\"fa fa-retweet\"></i> 0");
+							return (divFeedItemRTs);
+							}
+						function getFaves () {
+							const divFeedItemFaves = $("<span class=\"spFeedItemFaves\"></span>");
+							divFeedItemFaves.html ("<i class=\"fa fa-thumbs-up\"></i> 0");
+							return (divFeedItemFaves);
+							}
+						function getMenu () {
+							const divFeedItemMenu = $("<span class=\"spFeedItemMenu\">...</span>");
+							return (divFeedItemMenu);
+							}
+						divFeedItemBottomline.append (getReplies ());
+						divFeedItemBottomline.append (getRTs ());
+						divFeedItemBottomline.append (getFaves ());
+						divFeedItemBottomline.append (getMenu ());
+						return (divFeedItemBottomline);
 						}
-					
-					theText = decodeText (theText);
-					theText = markdownProcess (theText);
-					divFeedItemText.html (theText);
-					return (divFeedItemText);
-					}
-				divFeedItem.append (getFeedItemTopline ());
-				divFeedItem.append (getFeedItemText ());
-				divFeedItem.append (getFeedItemBottomline ());
-				divFeedItems.append (divFeedItem);
-				});
+					function getFeedItemText () {
+						function decodeText (theText) {
+							const replaceTable1 = {
+								"&#10;": "\n"
+								};
+							theText = multipleReplaceAll (theText, replaceTable1, false, "", "");
+							
+							
+							theText = decodeXml (theText);
+							
+							return (theText);
+							}
+						const divFeedItemText = $("<td class=\"divFeedItemText\"></td>");
+						var theText = (item.markdowntext === undefined) ? item.description : item.markdowntext;
+						
+						if (theText === undefined) {
+							console.log ("hello");
+							}
+						
+						theText = decodeText (theText);
+						theText = markdownProcess (theText);
+						divFeedItemText.html (theText);
+						return (divFeedItemText);
+						}
+					divFeedItem.append (getFeedItemTopline ());
+					divFeedItem.append (getFeedItemText ());
+					divFeedItem.append (getFeedItemBottomline ());
+					divFeedItems.append (divFeedItem);
+					});
+				}
+			
 			whereToAppend.append (divFeedItems);
 			}
 		});
 	}
 
 function viewSubscriptionList (username, whereToAppend) {
+	console.log ("viewSubscriptionList");
 	const urlOutline = "https://firesky.tv/lists/@" + username + "/follows.opml";
 	readOutline (urlOutline, function (err, theOutline) {
 		if (err) {
@@ -331,7 +351,7 @@ function viewSubscriptionList (username, whereToAppend) {
 			function getTopOfPageInfo () {
 				const divTopOfPageInfo = $("<div class=\"divTopOfPageInfo\"></div>");
 				const theHead = theOutline.opml.head;
-				const urlOutlineForDisplay = urlOutline;
+				const urlOutlineForDisplay = "<sp class=\"spUrlSubscriptionListOpml\"><a href=\"" + urlOutline + "\" target=\"_blank\">" + urlOutline + "</a></span>";
 				const divPubdate = $("<div class=\"divBlueskyFeedPubdate\">" + formatDateTime (theHead.dateModified) + ", " + urlOutlineForDisplay + "</div>");
 				const divTitle = $("<div class=\"divBlueskyFeedTitle\">" + theHead.title + "</div>");
 				const divDescription = $("<div class=\"divBlueskyFeedDescription\">" + theHead.description + "</div>");
@@ -365,7 +385,6 @@ function viewSubscriptionList (username, whereToAppend) {
 				
 				
 				liFeedListItem.click (function () {
-					console.log ("click: item == " + jsonStringify (item));
 					$(".listCursorOn").removeClass ("listCursorOn");
 					liFeedListItem.addClass ("listCursorOn");
 					viewFeed (item.xmlUrl, divFeedViewer);

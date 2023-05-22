@@ -76,9 +76,11 @@ body {
 
 .divListViewer {
 	display: table-cell;
+	vertical-align: top;
 	}
 .divFeedViewer {
 	display: table-cell;
+	vertical-align: top;
 	width: 500px;
 	height: 500px;
 	min-height: 500px;
@@ -124,9 +126,16 @@ body {
 .spItemName {
 	font-weight: bold;
 	margin-right: 5px;
+	cursor: pointer;
 	}
 .spItemUsername {
 	margin-right: 5px;
+	}
+.spItemFeed {
+	margin-right: 5px;
+	}
+.spItemFeed a {
+	color: inherit;
 	}
 .spItemWhen {
 	margin-right: 5px;
@@ -142,5 +151,23 @@ body {
 	}
 .spFeedItemMenu {
 	margin-right: 65px;
+	}
+
+.spUrlSubscriptionListOpml a {
+	color: inherit;
+	}
+.divFeedHasNoItems {
+	font-size: 18px;
+	font-weight: bold;
+	margin-top: .5em;
+	margin-left: .5em;
+	}
+.divFeedHasNoItems a {
+	color: inherit;
+	}
+
+.divFeedItem i {
+	opacity: 0.5;
+	margin-right: .2em;
 	}
 
