@@ -260,6 +260,12 @@ function viewFeed (feedUrl, whereToAppend) { //this is the real one!
 							}
 						
 						theText = decodeText (theText);
+						
+						theText = trimWhitespace (theText); //5/23/23 by DW 
+						if (beginsWith (theText, "# ")) {
+							theText = "##" + theText;
+							}
+						
 						theText = markdownProcess (theText);
 						divFeedItemText.html (theText);
 						return (divFeedItemText);
