@@ -33,6 +33,18 @@ function getUserSubscriptionList (username, callback) {
 		});
 	}
 
+function addToolTip (theObject, tipText, placement="right") { //8/24/22 by DW
+	$(theObject).attr ("data-container", "body"); //10/23/22 by DW
+	$(theObject).attr ("data-toggle", "tooltip");
+	$(theObject).attr ("data-placement", placement);
+	$(theObject).attr ("title", tipText);
+	$(theObject).click (function () { //11/1/22 by DW
+		$(theObject).tooltip ("hide");
+		});
+	theObject.tooltip ();
+	return (theObject);
+	}
+
 function fixTextAtts () {
 	$(".concord-text").each (function () {
 		var theText = $(this).text ();
@@ -83,7 +95,6 @@ function setOutlinerPrefs (id, flRenderMode, flReadonly) {
 			opInsert: opInsertCallback,
 			opCursorMoved: function (op) {
 				localPrefsChanged ();
-				$("#idUsernameInput").val (opGetLineText ());
 				},
 			opExpand: function (op) {
 				whenLastUserAction = new Date (); 
@@ -134,7 +145,7 @@ function startup () {
 		}
 	$("#idVersionNumber").html ("v" + appConsts.version);
 	$("#idUsernameInput").val ("scripting.com");
-	
+	addToolTip ($("#idLookupButton"), "See the help at the bottom of the page.");
 	if (localPrefs.savedOpmltext !== undefined) { //restore
 		viewOutline (localPrefs.savedOpmltext);
 		}

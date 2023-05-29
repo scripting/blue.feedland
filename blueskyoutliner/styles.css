@@ -3,7 +3,7 @@ body {
 	background-color: whitesmoke;
 	}
 .divWordPage {
-	margin-top: 30px;
+	margin-top: 15px;
 	margin-bottom: 400px;
 	background-color: whitesmoke;
 	z-index: 0;
@@ -88,4 +88,11 @@ body {
 	}
 .divErrorMessage {
 	color: red;
+	}
+
+.divCommentsPrompt {
+	font-size: 14px;
+	margin-top: 14px;
+	font-style: italic;
+	text-align: center;
 	}

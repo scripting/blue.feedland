@@ -31,10 +31,24 @@
 		<link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
 		
 		
+		<!-- Facebook metadata -->
+			<meta property="og:url" content="http://scripting.com/code/blueskyoutliner/" />
+			<meta property="og:type" content="website" />
+			<meta property="og:title" content="Bluesky People Browser" />
+			<meta property="og:description" content="An outliner for walking the structure of people and who they follow on Bluesky." />
+			<meta property="og:image" content="http://scripting.com/images/2023/05/29/blueskyPeopleBrowser.png" />
+			<meta property="og:site_name" content="thesaurus.land" />
+		<!-- Twitter metadata -->
+			<meta name="twitter:card" content="summary_large_image">
+			<meta name="twitter:site" content="@davewiner">
+			<meta name="twitter:title" content="Bluesky People Browser">
+			<meta name="twitter:description" content="An outliner for walking the structure of people and who they follow on Bluesky.">
+			<meta name="twitter:image:src" content="http://scripting.com/images/2023/05/29/blueskyPeopleBrowser.png">
 		</head>
 	<body>
 		<div class="divPageBackground" id="idPageBackground">
 			</div>
+		<div class="divCommentsPrompt">Comments or questions? <a href="https://github.com/scripting/blue.feedland/issues/12">Post them here</a>.</div>
 		<div class="divWordPage">
 			<div class="divVersionNumber" id="idVersionNumber"></div>
 			<center>
@@ -44,7 +58,7 @@
 				
 				<div class="divWordEntryBox">
 					<input id="idUsernameInput" type="text" placeholder="Bluesky username goes here">
-					<button class="btn btnValidate btnPrimary" onclick="lookupButtonClick ()">
+					<button id="idLookupButton" class="btn btnValidate btnPrimary" onclick="lookupButtonClick ()">
 						<i class="fa fa-arrow-up"></i> Look
 						</button>
 					</div>
@@ -58,9 +72,7 @@
 				</div>
 			<center>
 				<div class="divExplanatoryText">
-					Double-click on any word to see its synonyms. <br>
-					Questions? Please visit the <a href="http://thesaurus.smallpict.com/2014/07/09/welcomeToOurHumbleThesaurus.html" target="_blank">product blog</a>. 
-					Thanks to <a href="https://www.wordnik.com/about">WordNik</a> for the words server. :-)
+					Enter the identifier of a user in the box at the top of the page, and click the Look button. A list of the people they follow appears. Then you can double-click on any name to reveal who they follow and so on. This was an experiment, and I don't think it turned out that great because most people follow a lot of people for a list like this. But maybe new ideas will spring from this. 5/29/23 by DW
 					</div>
 				</center>
 			</div>
