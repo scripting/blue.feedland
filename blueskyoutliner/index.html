@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<title>Bluesky People Browser</title>
+		<meta charset='utf-8'> 
+		
+		<script src="//s3.amazonaws.com/scripting.com/code/includes/jquery-1.9.1.min.js"></script>
+<link href="//s3.amazonaws.com/scripting.com/code/includes/bootstrap.css" rel="stylesheet">
+<script src="//s3.amazonaws.com/scripting.com/code/includes/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="//s3.amazonaws.com/scripting.com/code/fontawesome/css/all.css">
+<link href="//fonts.googleapis.com/css?family=Ubuntu:400,500i,700" rel="stylesheet">
+<link href="//fonts.googleapis.com/css?family=Rancho" rel="stylesheet">
+
+<script src="//s3.amazonaws.com/scripting.com/code/includes/basic/code.js"></script>
+<link href="//s3.amazonaws.com/scripting.com/code/includes/basic/styles.css" rel="stylesheet" type="text/css">
+
+		
+		<script src="//s3.amazonaws.com/scripting.com/code/concord/testing/3.0.6/concord.js"></script>
+		<link rel="stylesheet" href="//s3.amazonaws.com/scripting.com/code/concord/testing/3.0.6/concordstyles.css"/>
+		<script src="//s3.amazonaws.com/fargo.io/code/shared/outliner.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/opmlpackage/client/opml.js"></script>
+		<link href="//s3.amazonaws.com/fargo.io/code/shared/outlinedialog.css" rel="stylesheet" type="text/css">
+		<script src="//s3.amazonaws.com/fargo.io/code/shared/outlinedialog.js"></script>
+		<script src="//s3.amazonaws.com/fargo.io/code/keypress.js" /></script>
+		
+		<link href="styles.css" rel="stylesheet" type="text/css">
+		<script src="code.js"></script>
+		
+		
+		<link href="http://fargo.io/code/ubuntuFont.css" rel="stylesheet" type="text/css">
+		<link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+		
+		
+		</head>
+	<body>
+		<div class="divPageBackground" id="idPageBackground">
+			</div>
+		<div class="divWordPage">
+			<div class="divVersionNumber" id="idVersionNumber"></div>
+			<center>
+				<div class="divHeadline">
+					PEOPLE BROWSER
+					</div>
+				
+				<div class="divWordEntryBox">
+					<input id="idUsernameInput" type="text" placeholder="Bluesky username goes here">
+					<button class="btn btnValidate btnPrimary" onclick="lookupButtonClick ()">
+						<i class="fa fa-arrow-up"></i> Look
+						</button>
+					</div>
+				<div class="divErrorMessage" id="idErrorMessage">
+					</div>
+				
+				</center>
+			<div class="divOutlinerContainer">
+				<div id="outliner">
+					</div>
+				</div>
+			<center>
+				<div class="divExplanatoryText">
+					Double-click on any word to see its synonyms. <br>
+					Questions? Please visit the <a href="http://thesaurus.smallpict.com/2014/07/09/welcomeToOurHumbleThesaurus.html" target="_blank">product blog</a>. 
+					Thanks to <a href="https://www.wordnik.com/about">WordNik</a> for the words server. :-)
+					</div>
+				</center>
+			</div>
+		<script>
+			startup ();
+			</script>
+		</body>
+	</html>

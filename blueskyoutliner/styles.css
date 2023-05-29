@@ -1,0 +1,91 @@
+body {
+	font-family: Ubuntu;
+	background-color: whitesmoke;
+	}
+.divWordPage {
+	margin-top: 30px;
+	margin-bottom: 400px;
+	background-color: whitesmoke;
+	z-index: 0;
+	opacity: .9;
+	}
+.divExplanatoryText {
+	line-height: 150%;
+	margin-top: 3px;
+	margin-bottom: 1em;
+	width: 40%;
+	font-size: 12px;
+	}
+.divOutlinerContainer {
+	width: 40%;
+	margin-left: auto;
+	margin-right: auto;
+	border: 1px solid silver;
+	min-height: 400px;
+	background-color: white;
+	padding: 5px;
+	margin-top: 10px;
+	}
+.divPageBackground {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	z-index: -1;
+	}
+.divVersionNumber {
+	font-size: 12px;
+	float: right;
+	padding: 3px;
+	color: black;
+	margin-top: -30px;
+	}
+.divHeadline {
+	font-family: "Montserrat";
+	font-size: 56px;
+	line-height: 100%;
+	display: table-cell;
+	vertical-align: top;
+	}
+.divInfoIcon {
+	font-size: 24px;
+	vertical-align: top;
+	display: table-cell;
+	margin-left: 3px;
+	color: seagreen;
+	}
+
+.divWordEntryBox {
+	width: 40%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	}
+.divWordEntryBox input[type="text"] {
+	font-family: "Ubuntu";
+	font-size: 18px;
+	padding: 5px;
+	width: 15em;
+	height: 2em;
+	display: table-cell;
+	vertical-align: middle;
+	margin-bottom: 0;
+	}
+.btnValidate {
+	font-family: "Ubuntu";
+	font-size: 16px;
+	display: table-cell;
+	vertical-align: middle;
+	margin-left: 5px;
+	}
+.divErrorMessage {
+	color: red;
+	}
