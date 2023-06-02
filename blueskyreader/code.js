@@ -36,15 +36,20 @@ function markdownProcess (s) {
 	var md = new Markdown.Converter ();
 	return (md.makeHtml (s));
 	}
+function decodeStringForHtml (s) {
+	return (replaceAll (s, "&#10;", "\n"));
+	}
 function addToolTip (theObject, tipText, placement="right") { //8/24/22 by DW
-	$(theObject).attr ("data-container", "body"); //10/23/22 by DW
-	$(theObject).attr ("data-toggle", "tooltip");
-	$(theObject).attr ("data-placement", placement);
-	$(theObject).attr ("title", tipText);
-	$(theObject).click (function () { //11/1/22 by DW
-		$(theObject).tooltip ("hide");
-		});
-	theObject.tooltip (); //5/22/23 by DW
+	if (tipText !== undefined) {
+		$(theObject).attr ("data-container", "body"); //10/23/22 by DW
+		$(theObject).attr ("data-toggle", "tooltip");
+		$(theObject).attr ("data-placement", placement);
+		$(theObject).attr ("title", decodeStringForHtml (tipText));
+		$(theObject).click (function () { //11/1/22 by DW
+			$(theObject).tooltip ("hide");
+			});
+		theObject.tooltip (); //5/22/23 by DW
+		}
 	return (theObject);
 	}
 function httpRequest (url, timeout, headers, callback) {
@@ -292,13 +297,6 @@ function viewSubscriptionList (username, whereToAppend) {
 		else {
 			function removeJunkFromOutline () { //stuff i don't want in the outline
 				theOutline.opml.body.subs.forEach (function (item) {
-					const junk = "on Bluesky";
-					if (stringContains (item.text, junk)) {
-						item.text = replaceAll (item.text, junk, "");
-						}
-					if (beginsWith (item.text, "@")) {
-						item.text = stringDelete (item.text, 1, 1);
-						}
 					});
 				}
 			function addAccountToList (username) {
@@ -342,12 +340,12 @@ function viewSubscriptionList (username, whereToAppend) {
 					});
 				}
 			function getItemText (item) {
+				
+				return (item.text); //6/2/23 by DW
+				
+				return (item.title); //6/1/23 by DW
+				
 				const junk = "Bluesky posts: from:";
-				
-				
-				
-				
-				
 				var theText = item.text;
 				if (stringContains (item.text, junk)) {
 					theText = stringDelete (theText, 1, junk.length);
@@ -388,7 +386,7 @@ function viewSubscriptionList (username, whereToAppend) {
 				const liFeedListItem = $("<li class=\"liFeedListItem\"></li>");
 				
 				liFeedListItem.html (getItemText (item));
-				
+				addToolTip (liFeedListItem, item.description);
 				
 				liFeedListItem.click (function () {
 					$(".listCursorOn").removeClass ("listCursorOn");
@@ -426,13 +424,12 @@ function startup () {
 		}
 	
 	const allparams = getAllUrlParams ();
+	var subs = "scripting.com";
 	if (allparams.subs !== undefined) {
-		viewSubscriptionList (allparams.subs, $(".divPageBody"));
+		subs = allparams.subs;
 		}
-	else {
-		const username = (allparams.username === undefined) ? "davew" : allparams.username;
-		viewFeedForEarlyDemo (username);
-		}
+	viewSubscriptionList (subs, $(".divPageBody"));
+	
 	
 	runEveryMinute (everyMinute);
 	hitCounter ();
