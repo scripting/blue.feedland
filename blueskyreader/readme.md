@@ -1,10 +1,6 @@
-# blue.feedland
+# blueskyreader
 
-A place to discuss and develop an app that connects social media apps via feeds.
+A browser app that builds on the RSS and OPML data for Bluesky users.
 
-### The original thread
-
-The discussion for this project <a href="https://github.com/scripting/rss/issues/2">began here</a>. 
-
-I started this as a place to share code and RFCs. 
+You can run the app <a href="http://scripting.com/code/blueskyreader/">here</a>. 
 
